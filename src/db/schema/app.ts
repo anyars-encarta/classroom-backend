@@ -41,5 +41,6 @@ export const subjectsRelation = relations(subjects, ({ one, many }) => ({ depart
 
 export type Department = typeof departments.$inferSelect;
 export type NewDepartment = typeof departments.$inferInsert;
+
 export type Subject = typeof subjects.$inferSelect;
 export type NewSubject = typeof subjects.$inferInsert;
