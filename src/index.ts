@@ -1,8 +1,8 @@
-import express  from 'express';
+import express from "express";
+import subjectsRouter from "./routes/subjects";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
-const router = express.Router();
 
 app.use(express.json());
 
@@ -12,30 +12,13 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-    res.send('Hello, welcome to the Classroom API!');
+app.use("/api/subjects", subjectsRouter);
+// app.use("/api", require("./routes/departments"));
+
+app.get("/", (req, res) => {
+  res.send("Hello, welcome to the Classroom API!");
 });
-
-router.get('/subjects', (req, res) => {
-    // Handle submission logic here
-    res.send('Subjects received!');
-});
-
-router.get('/subjects/:id', (req, res) => {
-    const { id } = req.params;
-    res.send(`Subject ID: ${id}`);
-});
-
-app.use('/api', router);
-
-// app.use((err, req, res, next) => {
-//   console.error("Error:", err.message);
-//   res.status(500).json({
-//     error: "Something went wrong!",
-//     message: err.message,
-//   });
-// });
 
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
