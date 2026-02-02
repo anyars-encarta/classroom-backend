@@ -1,6 +1,7 @@
 import express from "express";
 import subjectsRouter from "./routes/subjects";
 import cors from "cors";
+import departmentsRouter from "./routes/departments";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -23,7 +24,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/api/subjects", subjectsRouter);
-// app.use("/api", require("./routes/departments"));
+app.use("/api/departments", departmentsRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello, welcome to the Classroom API!");
