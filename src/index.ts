@@ -2,6 +2,8 @@ import express from "express";
 import subjectsRouter from "./routes/subjects";
 import cors from "cors";
 import departmentsRouter from "./routes/departments";
+import cloudinaryRouter from "./routes/cloudinary";
+import classesRouter from "./routes/classes";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -25,6 +27,8 @@ app.use((req, res, next) => {
 
 app.use("/api/subjects", subjectsRouter);
 app.use("/api/departments", departmentsRouter);
+app.use("/api/cloudinary", cloudinaryRouter);
+app.use("/api/classes", classesRouter);
 
 app.get("/", (req, res) => {
   res.send("Hello, welcome to the Classroom API!");
