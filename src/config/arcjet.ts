@@ -1,4 +1,4 @@
-import arcjet, { shield, detectBot, slidingWindow, tokenBucket } from "@arcjet/node";
+import arcjet, { shield, detectBot, slidingWindow } from "@arcjet/node";
 
 if(!process.env.ARCJET_KEY && process.env.NODE_ENV !== "test") {
   throw new Error("ARCJET_KEY is not set in the environment variables");
@@ -16,7 +16,7 @@ const aj = arcjet({
     }),
     slidingWindow({
       mode: "LIVE",
-      interval: '2',
+      interval: '2m',
       max: 5,
     }),
   ],
