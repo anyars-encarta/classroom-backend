@@ -19,18 +19,18 @@ const securityMiddleware = async (
       case "admin":
         limit = 20;
         message =
-          "Admin request limit exceeded. (20 per minute). Slow down, admin! Please wait before making another request.";
+          "Admin request limit exceeded (20 per minute). Slow down, admin! Please wait before making another request.";
         break;
       case "teacher":
       case "student":
         limit = 10;
         message =
-          "User request limit exceeded. (10 per minute). Please wait before making another request.";
+          "User request limit exceeded (10 per minute). Please wait before making another request.";
         break;
       default:
         limit = 5;
         message =
-          "Guest request limit exceeded. Please sign up for higher limits or wait before making another request.";
+          "Guest request limit exceeded (5 per minute). Please sign up for higher limits or wait before making another request.";
         break;
     };
 
@@ -60,7 +60,7 @@ const securityMiddleware = async (
     }
 
     if (decision.isDenied() && decision.reason.isRateLimit()) {
-      return res.status(403).json({ error: "Too many requests", message });
+      return res.status(429).json({ error: "Too many requests", message });
     }
 
     next();
