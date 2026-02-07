@@ -34,7 +34,7 @@ const securityMiddleware = async (
         break;
     };
 
-    const client = aj.withRule(
+    const client = aj?.withRule(
         slidingWindow({
             mode: "LIVE",
             interval: '1m',
@@ -49,17 +49,17 @@ const securityMiddleware = async (
         socket: { remoteAddress: req.socket.remoteAddress ?? req.ip ?? '0.0.0.0' },
     };
 
-    const decision = await client.protect(arcjetRequest);
+    const decision = await client?.protect(arcjetRequest);
 
-    if (decision.isDenied() && decision.reason.isBot()) {
+    if (decision?.isDenied() && decision.reason.isBot()) {
       return res.status(403).json({ error: "Forbidden", message: "Automated requests are not allowed" });
     }
 
-    if (decision.isDenied() && decision.reason.isShield()) {
+    if (decision?.isDenied() && decision.reason.isShield()) {
       return res.status(403).json({ error: "Forbidden", message: "Request blocked by security policy." });
     }
 
-    if (decision.isDenied() && decision.reason.isRateLimit()) {
+    if (decision?.isDenied() && decision.reason.isRateLimit()) {
       return res.status(429).json({ error: "Too many requests", message });
     }
 
