@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import  aj  from "../config/arcjet";
+import aj from "../config/arcjet";
 import { ArcjetNodeRequest, slidingWindow } from "@arcjet/node";
 
 const securityMiddleware = async (
@@ -32,31 +32,53 @@ const securityMiddleware = async (
         message =
           "Guest request limit exceeded (5 per minute). Please sign up for higher limits or wait before making another request.";
         break;
-    };
+    }
 
-    const client = aj?.withRule(
-        slidingWindow({
-            mode: "LIVE",
-            interval: '1m',
-            max: limit,
-        })
+    if (!aj) {
+      console.error("Arcjet client is not configured");
+      return res
+        .status(503)
+        .json({
+          error: "Service Unavailable",
+          message: "Security service is not configured",
+        });
+    }
+
+    const client = aj.withRule(
+      slidingWindow({
+        mode: "LIVE",
+        interval: "1m",
+        max: limit,
+      }),
     );
 
     const arcjetRequest: ArcjetNodeRequest = {
-        headers: req.headers,
-        method: req.method,
-        url: req.originalUrl ?? req.url,
-        socket: { remoteAddress: req.socket.remoteAddress ?? req.ip ?? '0.0.0.0' },
+      headers: req.headers,
+      method: req.method,
+      url: req.originalUrl ?? req.url,
+      socket: {
+        remoteAddress: req.socket.remoteAddress ?? req.ip ?? "0.0.0.0",
+      },
     };
 
-    const decision = await client?.protect(arcjetRequest);
+    const decision = await client.protect(arcjetRequest);
 
     if (decision?.isDenied() && decision.reason.isBot()) {
-      return res.status(403).json({ error: "Forbidden", message: "Automated requests are not allowed" });
+      return res
+        .status(403)
+        .json({
+          error: "Forbidden",
+          message: "Automated requests are not allowed",
+        });
     }
 
     if (decision?.isDenied() && decision.reason.isShield()) {
-      return res.status(403).json({ error: "Forbidden", message: "Request blocked by security policy." });
+      return res
+        .status(403)
+        .json({
+          error: "Forbidden",
+          message: "Request blocked by security policy.",
+        });
     }
 
     if (decision?.isDenied() && decision.reason.isRateLimit()) {
@@ -66,12 +88,10 @@ const securityMiddleware = async (
     next();
   } catch (e) {
     console.error("Arcjet Middleware error: ", e);
-    res
-      .status(500)
-      .json({
-        error: "Internal Server Error",
-        message: "Something went wrong with security middleware",
-      });
+    res.status(500).json({
+      error: "Internal Server Error",
+      message: "Something went wrong with security middleware",
+    });
   }
 };
 
