@@ -1,8 +1,5 @@
 {
     "licenceKey": "us_858a9ca7032585025843afc537aeb8b3",
     "appName": "Classroom Management Backend",
-    "port": 10000,
-    "appVersion": "1.0.0",
-    "appEnvironment": "dev",
-    "appUrl": "http://localhost:3000"
+    "port": 10000
 }
