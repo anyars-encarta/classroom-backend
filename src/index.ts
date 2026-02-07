@@ -5,6 +5,8 @@ import departmentsRouter from "./routes/departments";
 import cloudinaryRouter from "./routes/cloudinary";
 import classesRouter from "./routes/classes";
 import securityMiddleware from "./middleware/security";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -17,6 +19,8 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 }));
+
+app.all('/api/auth/*splat', toNodeHandler(auth));
 
 app.use(express.json());
 
