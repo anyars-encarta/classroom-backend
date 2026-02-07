@@ -4,6 +4,7 @@ import cors from "cors";
 import departmentsRouter from "./routes/departments";
 import cloudinaryRouter from "./routes/cloudinary";
 import classesRouter from "./routes/classes";
+import securityMiddleware from "./middleware/security";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -18,6 +19,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use(securityMiddleware);
 
 app.use((req, res, next) => {
   const timestamp = new Date().toISOString();
