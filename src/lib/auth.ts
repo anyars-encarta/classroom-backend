@@ -6,7 +6,8 @@ import * as schema from "../db/schema/auth.js";
 const secret = process.env.BETTER_AUTH_SECRET!;
 const frontendUrl = process.env.BETTER_AUTH_BASE_URL!;
 
-if(!secret || !frontendUrl) throw new Error("BETTER_AUTH_SECRET or BETTER_AUTH_BASE_URL is not set in the .env file");
+if(!secret) throw new Error("BETTER_AUTH_SECRET is not set in the .env file");
+if(!frontendUrl) throw new Error("BETTER_AUTH_BASE_URL is not set in the .env file");
 
 export const auth = betterAuth({
     secret,
