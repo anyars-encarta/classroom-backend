@@ -2,14 +2,14 @@ import AgentAPI from "apminsight";
 AgentAPI.config();
 
 import express from "express";
-import subjectsRouter from "./routes/subjects";
+import subjectsRouter from "./routes/subjects.js";
 import cors from "cors";
-import departmentsRouter from "./routes/departments";
-import cloudinaryRouter from "./routes/cloudinary";
-import classesRouter from "./routes/classes";
-import securityMiddleware from "./middleware/security";
+import departmentsRouter from "./routes/departments.js";
+import cloudinaryRouter from "./routes/cloudinary.js";
+import classesRouter from "./routes/classes.js";
+import securityMiddleware from "./middleware/security.js";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth";
+import { auth } from "./lib/auth.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
