@@ -4,12 +4,13 @@ import { db } from "../db/index.js";
 import * as schema from "../db/schema/auth.js";
 
 const secret = process.env.BETTER_AUTH_SECRET!;
+const frontendUrl = process.env.FRONTEND_URL!;
 
-if(!secret) throw new Error("BETTER_AUTH_SECRET is not set in the .env file");
+if(!secret || !frontendUrl) throw new Error("BETTER_AUTH_SECRET or FRONTEND_URL is not set in the .env file");
 
 export const auth = betterAuth({
     secret,
-    trustedOrigins: [process.env.FRONTEND_URL!],
+    trustedOrigins: [frontendUrl],
     database: drizzleAdapter(db, {
         provider: "pg",
         schema,
@@ -20,7 +21,7 @@ export const auth = betterAuth({
     user: {
         additionalFields: {
             role: {
-                type: "string", required: true, defaultValue: "student", input: false,
+                type: "string", required: true, defaultValue: "student", input: true,
             },
             imageCldPubId: {
                 type: "string", required: false, input: true,
