@@ -10,6 +10,7 @@ import classesRouter from "./routes/classes.js";
 import securityMiddleware from "./middleware/security.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
+import usersRouter from "./routes/users.js";
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/api/users", usersRouter);
 app.use("/api/subjects", subjectsRouter);
 app.use("/api/departments", departmentsRouter);
 app.use("/api/cloudinary", cloudinaryRouter);
