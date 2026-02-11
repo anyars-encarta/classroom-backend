@@ -3,6 +3,7 @@ import { classes, subjects } from "../db/schema/app.js";
 import { user } from "../db/schema/auth.js";
 import { db } from "../db/index.js";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
+import { randomBytes } from "crypto";
 
 const router = express.Router();
 
@@ -33,13 +34,19 @@ router.get("/", async (req, res) => {
 
     // If subject exists, filter by subject id
     if (subject) {
-      filterConditions.push(
-        eq(classes.subjectId, parseInt(String(subject), 10)),
-      );
+      const subjectId = parseInt(String(subject), 10);
+      if (Number.isNaN(subjectId)) {
+        return res.status(400).json({ error: "Invalid subject filter" });
+      }
+      filterConditions.push(eq(classes.subjectId, subjectId));
     }
 
     // If teacher exists, filter by teacher id
     if (teacher) {
+      const teacherId = parseInt(String(teacher), 10);
+      if (Number.isNaN(teacherId)) {
+        return res.status(400).json({ error: "Invalid teacher filter" });
+      }
       filterConditions.push(eq(classes.teacherId, String(teacher)));
     }
 
@@ -91,33 +98,35 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  try {
-    const [createdClass] = await db
-      .insert(classes)
-      .values({
-        ...req.body,
-        inviteCode: Math.random().toString(36).substring(2, 9),
-        schedules: [],
-      })
-      .returning({ id: classes.id });
+  const MAX_RETRIES = 3;
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
+      const [createdClass] = await db
+        .insert(classes)
+        .values({
+          ...req.body,
+          inviteCode: randomBytes(4).toString("hex"),
+          schedules: [],
+        })
+        .returning({ id: classes.id });
 
-    if (!createdClass) {
-      return res.status(400).json({
-        success: false,
-        error: "Failed to create class",
+      if (!createdClass) {
+        return res.status(400).json({
+          success: false,
+          error: "Failed to create class",
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        data: createdClass,
       });
+    } catch (error) {
+      if ((error as any).code === "unique_violation" && i < MAX_RETRIES - 1) {
+        continue; // retry
+      }
+      throw error;
     }
-
-    return res.status(201).json({
-      success: true,
-      data: createdClass,
-    });
-  } catch (error) {
-    console.error(`POST /classes error ${error}`);
-    return res.status(500).json({
-      success: false,
-      error: "Internal server error",
-    });
   }
 });
 
