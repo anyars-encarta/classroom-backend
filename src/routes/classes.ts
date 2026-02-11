@@ -93,15 +93,17 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  const { name, description, subjectId, teacherId, schedules: inputSchedules } = req.body;
+
   const MAX_RETRIES = 3;
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
       const [createdClass] = await db
         .insert(classes)
         .values({
-          ...req.body,
+          name, description, subjectId, teacherId,
           inviteCode: randomBytes(4).toString("hex"),
-          schedules: [],
+          schedules: req.body.schedules ?? [],
         })
         .returning({ id: classes.id });
 
@@ -117,7 +119,7 @@ router.post("/", async (req, res) => {
         data: createdClass,
       });
     } catch (error) {
-      if ((error as any).code === "unique_violation" && i < MAX_RETRIES - 1) {
+      if ((error as any).code === "23505" && i < MAX_RETRIES - 1) {
         continue; // retry
       }
       throw error;
