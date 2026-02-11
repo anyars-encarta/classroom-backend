@@ -24,12 +24,7 @@ router.get("/", async (req, res) => {
 
     // If search exists, filter by class name
     if (search) {
-      filterConditions.push(
-        or(
-          ilike(classes.name, `%${search}%`),
-          ilike(classes.inviteCode, `%${search}%`),
-        ),
-      );
+      filterConditions.push(ilike(classes.name, `%${search}%`));
     }
 
     // If subject exists, filter by subject id
