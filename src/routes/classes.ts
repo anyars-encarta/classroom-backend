@@ -129,17 +129,18 @@ router.post("/", async (req, res) => {
           data: createdClass,
         });
       } catch (error) {
-        if ((error as any).code === "23505" && i < MAX_RETRIES - 1) {
-          continue; // retry
+        if ((error as any).code === "23505") {
+          if (i < MAX_RETRIES - 1) {
+            continue; // retry
+          }
+          return res.status(500).json({
+            success: false,
+            error: "Invite code collision, please try again",
+          });
         }
         throw error;
       }
     }
-    // All retries exhausted
-    return res.status(500).json({
-      success: false,
-      error: "Failed to generate unique invite code",
-    });
   } catch (e) {
     console.error(`POST /classes error:, ${e}`);
     res.status(500).json({ success: false, error: "Internal Server Error" });
