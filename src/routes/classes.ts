@@ -93,37 +93,56 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { name, description, subjectId, teacherId, schedules: inputSchedules } = req.body;
+  try {
+    const {
+      name,
+      description,
+      subjectId,
+      teacherId,
+      schedules: inputSchedules,
+    } = req.body;
 
-  const MAX_RETRIES = 3;
-  for (let i = 0; i < MAX_RETRIES; i++) {
-    try {
-      const [createdClass] = await db
-        .insert(classes)
-        .values({
-          name, description, subjectId, teacherId,
-          inviteCode: randomBytes(4).toString("hex"),
-          schedules: req.body.schedules ?? [],
-        })
-        .returning({ id: classes.id });
+    const MAX_RETRIES = 3;
+    for (let i = 0; i < MAX_RETRIES; i++) {
+      try {
+        const [createdClass] = await db
+          .insert(classes)
+          .values({
+            name,
+            description,
+            subjectId,
+            teacherId,
+            inviteCode: randomBytes(4).toString("hex"),
+            schedules: inputSchedules ?? [],
+          })
+          .returning({ id: classes.id });
 
-      if (!createdClass) {
-        return res.status(400).json({
-          success: false,
-          error: "Failed to create class",
+        if (!createdClass) {
+          return res.status(400).json({
+            success: false,
+            error: "Failed to create class",
+          });
+        }
+
+        return res.status(201).json({
+          success: true,
+          data: createdClass,
         });
+      } catch (error) {
+        if ((error as any).code === "23505" && i < MAX_RETRIES - 1) {
+          continue; // retry
+        }
+        throw error;
       }
-
-      return res.status(201).json({
-        success: true,
-        data: createdClass,
-      });
-    } catch (error) {
-      if ((error as any).code === "23505" && i < MAX_RETRIES - 1) {
-        continue; // retry
-      }
-      throw error;
     }
+    // All retries exhausted
+    return res.status(500).json({
+      success: false,
+      error: "Failed to generate unique invite code",
+    });
+  } catch (e) {
+    console.error(`POST /classes error:, ${e}`);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 });
 
