@@ -1,8 +1,8 @@
 import express from "express";
-import { classes, subjects } from "../db/schema/app.js";
+import { classes, departments, subjects } from "../db/schema/app.js";
 import { user } from "../db/schema/auth.js";
 import { db } from "../db/index.js";
-import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, ilike, sql } from "drizzle-orm";
 import { randomBytes } from "crypto";
 
 const router = express.Router();
@@ -89,7 +89,33 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  res.send(`Get class with ID: ${req.params.id}`);
+  const classId = Number(req.params.id);
+
+  if (!classId || Number.isNaN(classId) || !Number.isFinite(classId)) res.status(400).json({ error: "No Class found." });
+
+  try {
+    const [classDetails] = await db
+      .select({
+        ...getTableColumns(classes),
+        subject: { ...getTableColumns(subjects) },
+        department: { ...getTableColumns(departments) },
+        teacher: { ...getTableColumns(user) },
+      })
+      .from(classes)
+      .leftJoin(subjects, eq(classes.subjectId, subjects.id))
+      .leftJoin(user, eq(classes.teacherId, user.id))
+      .leftJoin(departments, eq(subjects.departmentId, departments.id))
+      .where(eq(classes.id, classId));
+
+    if (!classDetails) return res.status(404).json({ error: "No Class found" });
+
+    res.status(200).json({
+      data: classDetails,
+    });
+  } catch (e) {
+    console.error(`GET /classes/${classId} error:, ${e}`);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 router.post("/", async (req, res) => {
