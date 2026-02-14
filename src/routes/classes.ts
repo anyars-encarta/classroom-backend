@@ -89,9 +89,11 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
-  const classId = Number(req.params.id);
-
-  if (!classId || Number.isNaN(classId) || !Number.isFinite(classId)) res.status(400).json({ error: "No Class found." });
+  const classId = Number.parseInt(req.params.id, 10);
+  
+  if (!Number.isFinite(classId) || classId <= 0) {
+    return res.status(400).json({ error: "Invalid class id" });
+  }
 
   try {
     const [classDetails] = await db
