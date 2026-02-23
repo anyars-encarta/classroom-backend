@@ -205,6 +205,18 @@ const seed = async () => {
             .from(classes)
             .where(inArray(classes.inviteCode, classInviteCodes));
     const classMap = new Map(classRows.map((row) => [row.inviteCode, row.id]));
+
+    if (data.enrollments.length) {
+      const enrollmentsToInsert = data.enrollments.map((e) => ({
+        studentId: e.studentId,
+        classId: ensureMapValue(classMap, e.classInviteCode, "class"),
+      }));
+
+      await tx
+        .insert(enrollments)
+        .values(enrollmentsToInsert)
+        .onConflictDoNothing();
+    }
   });
 };
 

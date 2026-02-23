@@ -57,6 +57,10 @@ router.post("/", async (req, res) => {
 
     if (!classRecord) return res.status(404).json({ error: "Class not found" });
 
+    if (classRecord.status !== "active") {
+      return res.status(400).json({ error: "Class is not active" });
+    }
+
     const [student] = await db
       .select()
       .from(user)
@@ -69,7 +73,7 @@ router.post("/", async (req, res) => {
         .status(400)
         .json({ error: "User must have a student role to enroll in a class" });
     }
-    
+
     const [existingEnrollment] = await db
       .select({ id: enrollments.id })
       .from(enrollments)
@@ -126,6 +130,12 @@ router.post("/join", async (req, res) => {
       .where(eq(user.id, studentId));
 
     if (!student) return res.status(404).json({ error: "Student not found" });
+
+    if (student.role !== "student") {
+      return res
+        .status(400)
+        .json({ error: "User must have a student role to enroll in a class" });
+    }
 
     const [existingEnrollment] = await db
       .select({ id: enrollments.id })

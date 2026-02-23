@@ -153,8 +153,8 @@ router.get("/:id/classes", async (req, res) => {
       return res.status(400).json({ error: "Invalid subject id" });
     }
 
-    const currentPage = Math.max(1, +page);
-    const limitPerPage = Math.max(1, +limit);
+    const currentPage = Math.max(1, parseInt(String(page), 10) || 1);
+    const limitPerPage = Math.max(1, parseInt(String(limit), 10) || 10);
     const offset = (currentPage - 1) * limitPerPage;
 
     const countResult = await db
@@ -207,8 +207,8 @@ router.get("/:id/users", async (req, res) => {
       return res.status(400).json({ error: "Invalid role" });
     }
 
-    const currentPage = Math.max(1, +page);
-    const limitPerPage = Math.max(1, +limit);
+    const currentPage = Math.max(1, parseInt(String(page), 10) || 1);
+    const limitPerPage = Math.max(1, parseInt(String(limit), 10) || 10);
     const offset = (currentPage - 1) * limitPerPage;
 
     const baseSelect = {
