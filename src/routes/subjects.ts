@@ -80,12 +80,18 @@ router.post("/", async (req, res) => {
   try {
     const { departmentId, name, code, description } = req.body;
 
+    if (!departmentId || !name || !code) {
+      return res.status(400).json({
+        error: "departmentId, name, and code are required fields",
+      });
+    }
+
     const [createdSubject] = await db
       .insert(subjects)
       .values({ departmentId, name, code, description })
       .returning({ id: subjects.id });
 
-    if (!createdSubject) throw Error;
+    if (!createdSubject) throw new Error("Failed to create subject");
 
     res.status(201).json({ data: createdSubject });
   } catch (error) {

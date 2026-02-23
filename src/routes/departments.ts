@@ -5,7 +5,7 @@ import { and, asc, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm
 
 const router = express.Router();
 
-// Get all subjects with optional search, filtering, and pagination
+// Get all departments with optional search, filtering, and pagination
 router.get("/", async (req, res) => {
   try {
     const { search, page = 1, limit = 10 } = req.query;

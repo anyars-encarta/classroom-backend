@@ -2,7 +2,13 @@ import express from "express";
 import { and, eq, getTableColumns } from "drizzle-orm";
 
 import { db } from "../db/index.js";
-import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
+import {
+  classes,
+  departments,
+  enrollments,
+  subjects,
+  user,
+} from "../db/schema/index.js";
 
 const router = express.Router();
 
@@ -58,14 +64,20 @@ router.post("/", async (req, res) => {
 
     if (!student) return res.status(404).json({ error: "Student not found" });
 
+    if (student.role !== "student") {
+      return res
+        .status(400)
+        .json({ error: "User must have a student role to enroll in a class" });
+    }
+    
     const [existingEnrollment] = await db
       .select({ id: enrollments.id })
       .from(enrollments)
       .where(
         and(
           eq(enrollments.classId, classId),
-          eq(enrollments.studentId, studentId)
-        )
+          eq(enrollments.studentId, studentId),
+        ),
       );
 
     if (existingEnrollment)
@@ -121,8 +133,8 @@ router.post("/join", async (req, res) => {
       .where(
         and(
           eq(enrollments.classId, classRecord.id),
-          eq(enrollments.studentId, studentId)
-        )
+          eq(enrollments.studentId, studentId),
+        ),
       );
 
     if (existingEnrollment)
