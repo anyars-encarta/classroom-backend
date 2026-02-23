@@ -72,7 +72,7 @@ const loadSeedData = async (): Promise<SeedData> => {
 
 const ensureMapValue = <T>(map: Map<string, T>, key: string, label: string) => {
   const value = map.get(key);
-  if (!value) {
+  if (value === undefined) {
     throw new Error(`Missing ${label} for key: ${key}`);
   }
   return value;

@@ -154,7 +154,10 @@ router.get("/:id/classes", async (req, res) => {
     }
 
     const currentPage = Math.max(1, parseInt(String(page), 10) || 1);
-    const limitPerPage = Math.max(1, parseInt(String(limit), 10) || 10);
+    const limitPerPage = Math.min(
+      Math.max(1, parseInt(String(limit), 10) || 10),
+      100,
+    );
     const offset = (currentPage - 1) * limitPerPage;
 
     const countResult = await db
