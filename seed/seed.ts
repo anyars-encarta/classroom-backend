@@ -82,16 +82,15 @@ const seed = async () => {
   const data = await loadSeedData();
 
   await db.transaction(async (tx) => {
-    await db.delete(enrollments);
-    await db.delete(classes);
-    await db.delete(subjects);
-    await db.delete(departments);
-    await db.delete(session);
-    await db.delete(account);
-    await db.delete(user);
-
+    await tx.delete(enrollments);
+    await tx.delete(classes);
+    await tx.delete(subjects);
+    await tx.delete(departments);
+    await tx.delete(session);
+    await tx.delete(account);
+    await tx.delete(user);
     if (data.users.length) {
-      await db
+      await tx
         .insert(user)
         .values(
           data.users.map((seedUser) => ({
@@ -105,7 +104,7 @@ const seed = async () => {
         )
         .onConflictDoNothing({ target: user.id });
 
-      await db
+      await tx
         .insert(account)
         .values(
           data.users.map((seedUser) => ({
@@ -122,7 +121,7 @@ const seed = async () => {
     }
 
     if (data.departments.length) {
-      await db
+      await tx
         .insert(departments)
         .values(
           data.departments.map((dept) => ({
@@ -138,7 +137,7 @@ const seed = async () => {
     const departmentRows =
       departmentCodes.length === 0
         ? []
-        : await db
+        : await tx
             .select({ id: departments.id, code: departments.code })
             .from(departments)
             .where(inArray(departments.code, departmentCodes));
@@ -158,7 +157,7 @@ const seed = async () => {
         ),
       }));
 
-      await db
+      await tx
         .insert(subjects)
         .values(subjectsToInsert)
         .onConflictDoNothing({ target: subjects.code });
@@ -168,7 +167,7 @@ const seed = async () => {
     const subjectRows =
       subjectCodes.length === 0
         ? []
-        : await db
+        : await tx
             .select({ id: subjects.id, code: subjects.code })
             .from(subjects)
             .where(inArray(subjects.code, subjectCodes));
@@ -188,7 +187,7 @@ const seed = async () => {
         schedules: [],
       }));
 
-      await db
+      await tx
         .insert(classes)
         .values(classesToInsert)
         .onConflictDoNothing({ target: classes.inviteCode });
@@ -200,7 +199,7 @@ const seed = async () => {
     const classRows =
       classInviteCodes.length === 0
         ? []
-        : await db
+        : await tx
             .select({ id: classes.id, inviteCode: classes.inviteCode })
             .from(classes)
             .where(inArray(classes.inviteCode, classInviteCodes));

@@ -80,9 +80,9 @@ router.post("/", async (req, res) => {
   try {
     const { departmentId, name, code, description } = req.body;
 
-    if (!departmentId || !name || !code) {
+    if (!departmentId || !name || !code || ! description) {
       return res.status(400).json({
-        error: "departmentId, name, and code are required fields",
+        error: "departmentId, name, code, and description are required fields",
       });
     }
 
