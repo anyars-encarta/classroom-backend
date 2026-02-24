@@ -1,5 +1,11 @@
 import express from "express";
-import { classes, departments, enrollments, subjects, user } from "../db/schema/index.js";
+import {
+  classes,
+  departments,
+  enrollments,
+  subjects,
+  user,
+} from "../db/schema/index.js";
 import { db } from "../db/index.js";
 import { and, desc, eq, getTableColumns, ilike, or, sql } from "drizzle-orm";
 
@@ -32,7 +38,7 @@ router.get("/", async (req, res) => {
 
     // If department exists, filter by department name
     if (department) {
-      const deptPattern = `%${String(department).replace(/[%_]/g, '\\$&')}%`;
+      const deptPattern = `%${String(department).replace(/[%_]/g, "\\$&")}%`;
       filterConditions.push(ilike(departments.name, deptPattern));
     }
 
@@ -80,7 +86,7 @@ router.post("/", async (req, res) => {
   try {
     const { departmentId, name, code, description } = req.body;
 
-    if (!departmentId || !name || !code || ! description) {
+    if (!departmentId || !name || !code || !description) {
       return res.status(400).json({
         error: "departmentId, name, code, and description are required fields",
       });
@@ -125,7 +131,7 @@ router.get("/:id", async (req, res) => {
     }
 
     const classesCount = await db
-      .select({ count: sql<number>`count(*)` })
+      .select({ count: sql`count(*)`.mapWith(Number) })
       .from(classes)
       .where(eq(classes.subjectId, subjectId));
 
@@ -161,9 +167,20 @@ router.get("/:id/classes", async (req, res) => {
     const offset = (currentPage - 1) * limitPerPage;
 
     const countResult = await db
-      .select({ count: sql<number>`count(*)` })
+      .select({ count: sql`count(*)`.mapWith(Number) })
       .from(classes)
       .where(eq(classes.subjectId, subjectId));
+
+    if (
+      !countResult[0]?.count &&
+      !(await db
+        .select({ id: subjects.id })
+        .from(subjects)
+        .where(eq(subjects.id, subjectId))
+        .then((r) => r[0]))
+    ) {
+      return res.status(404).json({ error: "Subject not found" });
+    }
 
     const totalCount = countResult[0]?.count ?? 0;
 
@@ -244,12 +261,16 @@ router.get("/:id/users", async (req, res) => {
     const countResult =
       role === "teacher"
         ? await db
-            .select({ count: sql<number>`count(distinct ${user.id})` })
+            .select({
+              count: sql<number>`count(distinct ${user.id})`.mapWith(Number),
+            })
             .from(user)
             .leftJoin(classes, eq(user.id, classes.teacherId))
             .where(and(eq(user.role, role), eq(classes.subjectId, subjectId)))
         : await db
-            .select({ count: sql<number>`count(distinct ${user.id})` })
+            .select({
+              count: sql<number>`count(distinct ${user.id})`.mapWith(Number),
+            })
             .from(user)
             .leftJoin(enrollments, eq(user.id, enrollments.studentId))
             .leftJoin(classes, eq(enrollments.classId, classes.id))
