@@ -1,51 +1,49 @@
-import AgentAPI from "apminsight";
-AgentAPI.config();
+import('apminsight')
+  .then(({ default: AgentAPI }) => AgentAPI.config())
+  .catch(() => console.log('APM not available in this environment'));
 
-import express from "express";
-import subjectsRouter from "./routes/subjects.js";
 import cors from "cors";
-import departmentsRouter from "./routes/departments.js";
-import cloudinaryRouter from "./routes/cloudinary.js";
-import classesRouter from "./routes/classes.js";
-import securityMiddleware from "./middleware/security.js";
+import express from "express";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth.js";
+
+import subjectsRouter from "./routes/subjects.js";
 import usersRouter from "./routes/users.js";
+import classesRouter from "./routes/classes.js";
+import departmentsRouter from "./routes/departments.js";
+import statsRouter from "./routes/stats.js";
+import enrollmentsRouter from "./routes/enrollments.js";
+
+// import securityMiddleware from "./middleware/security.js";
+import { auth } from "./lib/auth.js";
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = 8000;
 
-if (!process.env.FRONTEND_URL) throw new Error("FRONTEND_URL is not set in the .env file");
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL, // React app URL
+    methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed HTTP methods
+    credentials: true, // allow cookies
+  })
+);
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-}));
-
-app.all('/api/auth/*splat', toNodeHandler(auth));
+app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(express.json());
 
-app.use(securityMiddleware);
+// app.use(securityMiddleware);
 
-app.use((req, res, next) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${req.method} ${req.url}`);
-  next();
-});
-
-app.use("/api/users", usersRouter);
 app.use("/api/subjects", subjectsRouter);
-app.use("/api/departments", departmentsRouter);
-app.use("/api/cloudinary", cloudinaryRouter);
+app.use("/api/users", usersRouter);
 app.use("/api/classes", classesRouter);
+app.use("/api/departments", departmentsRouter);
+app.use("/api/stats", statsRouter);
+app.use("/api/enrollments", enrollmentsRouter);
 
 app.get("/", (req, res) => {
-  res.send("Hello, welcome to the Classroom API!");
+  res.send("Backend server is running!");
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
